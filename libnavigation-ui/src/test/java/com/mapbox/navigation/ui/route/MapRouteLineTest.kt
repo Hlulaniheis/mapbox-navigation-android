@@ -51,7 +51,7 @@ class MapRouteLineTest {
 
     lateinit var mapRouteSourceProvider: MapRouteSourceProvider
     lateinit var layerProvider: MapRouteLayerProvider
-    lateinit var alternativeRouteCasingdLayer: LineLayer
+    lateinit var alternativeRouteCasingLayer: LineLayer
     lateinit var alternativeRouteLayer: LineLayer
     lateinit var primaryRouteCasingLayer: LineLayer
     lateinit var primaryRouteLayer: LineLayer
@@ -67,7 +67,7 @@ class MapRouteLineTest {
             ctx,
             R.attr.navigationViewRouteStyle, R.style.NavigationMapRoute
         )
-        alternativeRouteCasingdLayer = mockk {
+        alternativeRouteCasingLayer = mockk {
             every { id } returns ALTERNATIVE_ROUTE_CASING_LAYER_ID
         }
 
@@ -93,7 +93,7 @@ class MapRouteLineTest {
 
         style = mockk(relaxUnitFun = true) {
             every { getLayer(ALTERNATIVE_ROUTE_LAYER_ID) } returns alternativeRouteLayer
-            every { getLayer(ALTERNATIVE_ROUTE_CASING_LAYER_ID) } returns alternativeRouteCasingdLayer
+            every { getLayer(ALTERNATIVE_ROUTE_CASING_LAYER_ID) } returns alternativeRouteCasingLayer
             every { getLayer(PRIMARY_ROUTE_LAYER_ID) } returns primaryRouteLayer
             every { getLayer(PRIMARY_ROUTE_TRAFFIC_LAYER_ID) } returns primaryRouteTrafficLayer
             every { getLayer(PRIMARY_ROUTE_CASING_LAYER_ID) } returns primaryRouteCasingLayer
@@ -119,7 +119,7 @@ class MapRouteLineTest {
                     1.0f,
                     -9273715
                 )
-            } returns alternativeRouteCasingdLayer
+            } returns alternativeRouteCasingLayer
             every {
                 initializeAlternativeRouteLayer(
                     style,
@@ -1029,13 +1029,13 @@ class MapRouteLineTest {
         every { primaryRouteLayer.setFilter(any()) } returns Unit
         every { primaryRouteCasingLayer.setFilter(any()) } returns Unit
         every { alternativeRouteLayer.setFilter(any()) } returns Unit
-        every { alternativeRouteCasingdLayer.setFilter(any()) } returns Unit
+        every { alternativeRouteCasingLayer.setFilter(any()) } returns Unit
         every { primaryRouteTrafficLayer.setFilter(any()) } returns Unit
         every { waypointLayer.setFilter(any()) } returns Unit
         every { primaryRouteLayer.setProperties(any()) } returns Unit
         every { primaryRouteCasingLayer.setProperties(any()) } returns Unit
         every { alternativeRouteLayer.setProperties(any()) } returns Unit
-        every { alternativeRouteCasingdLayer.setProperties(any()) } returns Unit
+        every { alternativeRouteCasingLayer.setProperties(any()) } returns Unit
         every { primaryRouteTrafficLayer.setProperties(any()) } returns Unit
         every { waypointLayer.setProperties(any()) } returns Unit
         every { style.getLayerAs<LineLayer>("mapbox-navigation-route-casing-layer") } returns primaryRouteCasingLayer

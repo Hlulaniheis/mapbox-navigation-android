@@ -35,6 +35,7 @@ import com.mapbox.navigation.ui.internal.route.RouteConstants.PRIMARY_ROUTE_TRAF
 import com.mapbox.navigation.ui.internal.route.RouteConstants.PRIMARY_ROUTE_TRAFFIC_SOURCE_ID
 import com.mapbox.navigation.ui.internal.route.RouteConstants.SEVERE_CONGESTION_VALUE
 import com.mapbox.navigation.ui.internal.route.RouteConstants.UNKNOWN_CONGESTION_VALUE
+import com.mapbox.navigation.ui.internal.route.RouteConstants.VANISHING_ROUTE_LINE_PADDING
 import com.mapbox.navigation.ui.internal.route.RouteConstants.WAYPOINT_DESTINATION_VALUE
 import com.mapbox.navigation.ui.internal.route.RouteConstants.WAYPOINT_ORIGIN_VALUE
 import com.mapbox.navigation.ui.internal.route.RouteConstants.WAYPOINT_PROPERTY_KEY
@@ -49,8 +50,10 @@ import com.mapbox.navigation.ui.route.MapRouteLine.MapRouteLineSupport.getResour
 import com.mapbox.navigation.ui.route.MapRouteLine.MapRouteLineSupport.getStyledColor
 import com.mapbox.navigation.utils.internal.ThreadController
 import com.mapbox.navigation.utils.internal.parallelMap
+import com.mapbox.turf.TurfConstants
 import com.mapbox.turf.TurfMeasurement
 import java.math.BigDecimal
+import timber.log.Timber
 
 /**
  * Responsible for the appearance of the route lines on the map. This class applies styling
@@ -875,6 +878,27 @@ internal class MapRouteLine(
         }
     }
 
+    /**
+     * Updates the route line appearance from the origin point to the point indicated in
+     * @param point representing the portion of the route that has been traveled.
+     */
+    fun updateVanishingPoint(point: Point) {
+        if (primaryRoute != null && primaryRoute!!.distance() != null) {
+            val lineString = getLineStringForRoute(primaryRoute!!)
+            val routeDistance = primaryRoute!!.distance()!!
+            val distanceTraveled = MapRouteLineSupport.findDistanceOfPointAlongLine(lineString, point) - VANISHING_ROUTE_LINE_PADDING
+            val percentTraveled = (distanceTraveled / routeDistance).toFloat()
+            if (percentTraveled > MINIMUM_ROUTE_LINE_OFFSET) {
+                val expression = getExpressionAtOffset(percentTraveled)
+                hideCasingLineAtOffset(percentTraveled)
+                hideRouteLineAtOffset(percentTraveled)
+                decorateRouteLine(expression)
+            }
+        } else {
+            Timber.e("The directions route supplied does not have a value for distance. The vanishing point of the route line cannot be updated.")
+        }
+    }
+
     internal object MapRouteLineSupport {
 
         /**
@@ -1159,6 +1183,39 @@ internal class MapRouteLine(
                     if (index == 0) WAYPOINT_ORIGIN_VALUE else WAYPOINT_DESTINATION_VALUE
                 it.addStringProperty(WAYPOINT_PROPERTY_KEY, propValue)
             }
+        }
+
+        fun findDistanceOfPointAlongLine(line: LineString, point: Point): Double {
+            val linePoints = line.coordinates()
+            val runningTotalDistance = mutableListOf<Double>()
+            var distanceToReturn = 0.0
+            for (index in 0 until linePoints.size) {
+                when (index == 0) {
+                    true -> 0.0
+                    false -> TurfMeasurement.distance(linePoints[index - 1], linePoints[index], TurfConstants.UNIT_METERS)
+                }.also {
+                    runningTotalDistance.add(it)
+                }
+
+                val distanceToPoint = TurfMeasurement.distance(linePoints[index], point, TurfConstants.UNIT_METERS)
+                val distanceToNextIndex = if ((index + 1) < linePoints.size) {
+                    TurfMeasurement.distance(
+                        linePoints[index],
+                        linePoints[index + 1],
+                        TurfConstants.UNIT_METERS
+                    )
+                } else {
+                    distanceToPoint
+                }
+
+                if (distanceToPoint > distanceToNextIndex) {
+                    continue
+                } else {
+                    distanceToReturn = runningTotalDistance.sum() + distanceToPoint
+                    break
+                }
+            }
+            return distanceToReturn
         }
     }
 }
