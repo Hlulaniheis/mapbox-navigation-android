@@ -830,7 +830,7 @@ class MapRouteLineTest {
         val result =
             mapRouteLine.getRouteColorForCongestion(RouteConstants.MODERATE_CONGESTION_VALUE, true)
 
-        assertEquals(-809393, result)
+        assertEquals(-27392, result)
     }
 
     @Test
@@ -849,7 +849,7 @@ class MapRouteLineTest {
         val result =
             mapRouteLine.getRouteColorForCongestion(RouteConstants.HEAVY_CONGESTION_VALUE, true)
 
-        assertEquals(-1494208, result)
+        assertEquals(-45747, result)
     }
 
     @Test
@@ -868,7 +868,7 @@ class MapRouteLineTest {
         val result =
             mapRouteLine.getRouteColorForCongestion(RouteConstants.SEVERE_CONGESTION_VALUE, true)
 
-        assertEquals(-1494208, result)
+        assertEquals(-7396281, result)
     }
 
     @Test
